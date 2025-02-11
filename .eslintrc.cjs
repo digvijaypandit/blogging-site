@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -19,7 +18,6 @@ module.exports = {
     ],
   },
 }
-=======
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -40,4 +38,3 @@ module.exports = {
     ],
   },
 }
->>>>>>> 3d9e43c (Initial commit)
