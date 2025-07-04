@@ -3,8 +3,10 @@ import appwriteService from "../appwrite/config";
 import { Container, PostCard } from "../components";
 import { useSelector } from "react-redux";
 import { FiSearch } from "react-icons/fi";
+import useEnsureUserLoaded from "../hooks/useEnsureUserLoaded";
 
 function Home() {
+    useEnsureUserLoaded()
     const [posts, setPosts] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const reduxUserData = useSelector((state) => state.auth.userData);
