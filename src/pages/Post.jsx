@@ -33,6 +33,8 @@ export default function Post() {
         }
     }, [slug, navigate]);
     
+      
+
     const deletePost = () => {
         appwriteService.deletePost(post.$id).then((status) => {
             if (status) {
