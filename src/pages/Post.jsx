@@ -50,14 +50,21 @@ export default function Post() {
         <div className="py-8 relative top-10">
             <Container>
                 <div className="relative w-full">
-                    <img
-                        src={appwriteService.getFilePreview(post.featuredImage)}
-                        alt={post.title}
-                        onError={(e) => {
-                            e.target.src = "/placeholder.jpg"; // Fallback image
-                        }}
-                        className="w-full h-[500px] object-cover rounded-xl"
-                    />
+                    {post.featuredImage ? (
+                        <img
+                            src={appwriteService.getFilePreview(post.featuredImage)}
+                            alt={post.title}
+                            onError={(e) => {
+                                console.error("Failed to load image:", e.target.src);
+                                e.target.src = "/placeholder.jpg"; // Local fallback image
+                            }}
+                            className="w-full h-[500px] object-cover rounded-xl"
+                        />
+                    ) : (
+                        <div className="w-full h-[500px] bg-gray-200 flex items-center justify-center rounded-xl">
+                            <span className="text-gray-500 text-lg">No Image Available</span>
+                        </div>
+                    )}
 
                     {isAuthor && (
                         <div className="absolute top-4 right-4 flex space-x-3 bg-white bg-opacity-50 p-2 rounded-lg">
