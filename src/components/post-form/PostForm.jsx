@@ -24,12 +24,28 @@ export default function PostForm({ post }) {
     });
 
     const navigate = useNavigate();
-    const userData = useSelector((state) => state.auth.userData);
+    const auth = useSelector((state) => state.auth);
 
-    if (!userData) {
-        return <p className="text-center text-red-600 mt-4">Please log in to create or edit a post.</p>;
+    // 🧠 Loading / login logic
+    if (!auth.status) {
+        return (
+            <p className="text-center text-red-600 mt-10 text-lg">
+                You must be logged in to create or edit posts.
+            </p>
+        );
     }
 
+    if (!auth.userData) {
+        return (
+            <p className="text-center text-blue-600 mt-10 text-lg">
+                Loading user info...
+            </p>
+        );
+    }
+
+    const userData = auth.userData;
+
+    // 🔁 Slug transformation
     const slugTransform = useCallback((value) => {
         return value
             ?.trim()
@@ -38,24 +54,30 @@ export default function PostForm({ post }) {
             .replace(/\s+/g, "-") || "";
     }, []);
 
+    // 🔄 Auto-generate slug from title
     useEffect(() => {
         const subscription = watch((value, { name }) => {
             if (name === "title") {
-                setValue("slug", slugTransform(value.title), { shouldValidate: true });
+                setValue("slug", slugTransform(value.title), {
+                    shouldValidate: true,
+                });
             }
         });
 
         return () => subscription.unsubscribe();
     }, [watch, slugTransform, setValue]);
 
+    // 📨 Form submission
     const submit = async (data) => {
         try {
             let file = null;
+
             if (data.image?.[0]) {
                 file = await appwriteService.uploadFile(data.image[0]);
             }
 
             if (post) {
+                // Update mode
                 if (file && post.featuredImage) {
                     await appwriteService.deleteFile(post.featuredImage);
                 }
@@ -69,6 +91,7 @@ export default function PostForm({ post }) {
                     navigate(`/post/${updatedPost.$id}`);
                 }
             } else {
+                // Create mode
                 const newPost = await appwriteService.createPost({
                     ...data,
                     featuredImage: file?.$id || null,
@@ -90,7 +113,7 @@ export default function PostForm({ post }) {
             onSubmit={handleSubmit(submit)}
             className="flex flex-col lg:flex-row gap-8 py-8"
         >
-            {/* Main editor column */}
+            {/* Left: Content & Fields */}
             <div className="w-full lg:w-2/3">
                 <Input
                     label="Title"
@@ -98,6 +121,7 @@ export default function PostForm({ post }) {
                     className="mb-4"
                     {...register("title", { required: true })}
                 />
+
                 <Input
                     label="Slug"
                     placeholder="Enter post slug"
@@ -109,6 +133,7 @@ export default function PostForm({ post }) {
                         })
                     }
                 />
+
                 <RTE
                     label="Content"
                     name="content"
@@ -117,8 +142,8 @@ export default function PostForm({ post }) {
                 />
             </div>
 
-            {/* Right sidebar */}
-            <div className="w-full lg:w-1/3 space-y-4">
+            {/* Right: Image, Status, Submit */}
+            <div className="w-full lg:w-1/3 flex flex-col space-y-4">
                 <Input
                     label="Featured Image"
                     type="file"

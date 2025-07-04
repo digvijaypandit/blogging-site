@@ -1,27 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
 
-export default function Protected({ children, authentication = true }) {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const authStatus = useSelector((state) => state.auth.status);
+export default function AuthLayout({ children, authentication = true }) {
+  const { status, loading } = useSelector((state) => state.auth);
 
-    useEffect(() => {
-        if (authentication) {
-            if (!authStatus) {
-                navigate('/login');
-            } else {
-                setLoading(false);
-            }
-        } else {
-            if (authStatus) {
-                navigate('/');
-            } else {
-                setLoading(false);
-            }
-        }
-    }, [authStatus, authentication, navigate]);
+  // Still fetching user data
+  if (loading) {
+    return <p className="text-center mt-10 text-lg">Loading...</p>;
+  }
 
-    return loading ? <div className="text-center py-10 text-xl">Loading...</div> : <>{children}</>;
+  // For authenticated routes (like /add-post)
+  if (authentication && !status) {
+    return <Navigate to="/login" />;
+  }
+
+  // For unauthenticated routes (like /login, /signup)
+  if (!authentication && status) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
 }
