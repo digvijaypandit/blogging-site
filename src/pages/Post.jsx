@@ -5,43 +5,45 @@ import { Button, Container } from "../components";
 import parse from "html-react-parser";
 import { useSelector } from "react-redux";
 
-
 export default function Post() {
     const [post, setPost] = useState(null);
     const [author, setAuthor] = useState(null);
     const { slug } = useParams();
     const navigate = useNavigate();
-
     const userData = useSelector((state) => state.auth.userData);
+
     const isAuthor = post && userData ? post.userId === userData.$id : false;
 
     useEffect(() => {
         if (slug) {
-            appwriteService.getPost(slug).then((post) => {
-                if (post) {
-                    setPost(post);
-                    setAuthor(post.userName || "Unknown Author");
-                } else {
+            appwriteService
+                .getPost(slug)
+                .then((post) => {
+                    if (post) {
+                        setPost(post);
+                        setAuthor(post.userName || "Unknown Author");
+                    } else {
+                        navigate("/");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching post:", error);
                     navigate("/");
-                }
-            }).catch((error) => {
-                console.error("Error fetching post:", error);
-                navigate("/");
-            });
+                });
         } else {
             navigate("/");
         }
     }, [slug, navigate]);
-    
-      
 
     const deletePost = () => {
-        appwriteService.deletePost(post.$id).then((status) => {
-            if (status) {
-                appwriteService.deleteFile(post.featuredImage);
-                navigate("/");
-            }
-        });
+        if (window.confirm("Are you sure you want to delete this post?")) {
+            appwriteService.deletePost(post.$id).then((status) => {
+                if (status) {
+                    appwriteService.deleteFile(post.featuredImage);
+                    navigate("/");
+                }
+            });
+        }
     };
 
     return post ? (
@@ -51,6 +53,9 @@ export default function Post() {
                     <img
                         src={appwriteService.getFilePreview(post.featuredImage)}
                         alt={post.title}
+                        onError={(e) => {
+                            e.target.src = "/placeholder.jpg"; // Fallback image
+                        }}
                         className="w-full h-[500px] object-cover rounded-xl"
                     />
 
@@ -71,12 +76,9 @@ export default function Post() {
                     <div className="browser-css mt-4">{parse(post.content)}</div>
 
                     <div className="flex justify-end mt-6">
-                        <p className="text-lg font-semibold text-gray-600 italic">
-                            - {author}
-                        </p>
+                        <p className="text-lg font-semibold text-gray-600 italic">- {author}</p>
                     </div>
                 </div>
-
             </Container>
         </div>
     ) : (

@@ -1,23 +1,27 @@
-import React, {useEffect, useState} from 'react'
-import {useSelector} from 'react-redux'
-import {useNavigate} from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-export default function Protected({children, authentication = true}) {
-
-    const navigate = useNavigate()
-    const [loader, setLoader] = useState(true)
-    const authStatus = useSelector(state => state.auth.status)
+export default function Protected({ children, authentication = true }) {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const authStatus = useSelector((state) => state.auth.status);
 
     useEffect(() => {
-
-        if(authentication && authStatus !== authentication){
-            navigate("/login")
-        } else if(!authentication && authStatus !== authentication){
-            navigate("/")
+        if (authentication) {
+            if (!authStatus) {
+                navigate('/login');
+            } else {
+                setLoading(false);
+            }
+        } else {
+            if (authStatus) {
+                navigate('/');
+            } else {
+                setLoading(false);
+            }
         }
-        setLoader(false)
-    }, [authStatus, navigate, authentication])
+    }, [authStatus, authentication, navigate]);
 
-  return loader ? <h1>Loading...</h1> : <>{children}</>
+    return loading ? <div className="text-center py-10 text-xl">Loading...</div> : <>{children}</>;
 }
-

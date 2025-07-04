@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import appwriteService from "../appwrite/config";
 import { Container, PostCard } from "../components";
 import { useSelector } from "react-redux";
+import { FiSearch } from "react-icons/fi";
 
 function Home() {
     const [posts, setPosts] = useState([]);
@@ -17,7 +18,7 @@ function Home() {
 
     useEffect(() => {
         appwriteService.getPosts().then((posts) => {
-            if (posts) {
+            if (posts && posts.documents) {
                 setPosts(posts.documents.slice(0, 6));
             }
         });
@@ -28,45 +29,53 @@ function Home() {
     );
 
     return (
-        <div className="w-full py-8 relative top-12">
+        <div className="w-full py-16 relative top-10 bg-gradient-to-b from-[#f8f9fa] to-white min-h-screen">
             <Container>
-                <div className="w-full text-center py-12 bg-gray-100">
-                    <h1 className="text-4xl font-bold text-gray-800">
-                        Welcome {userData ? userData.name : "Guest"}!
+                {/* Hero Section */}
+                <div className="w-full text-center py-14 rounded-xl bg-white shadow-xl backdrop-blur-sm">
+                    <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight">
+                        Welcome, {userData ? userData.name : "Guest"} 👋
                     </h1>
-                    <p className="text-lg text-gray-600 mt-4">
+                    <p className="text-lg text-gray-600 mt-4 max-w-xl mx-auto">
                         {userData
-                            ? `Check out the latest articles from the community, ${userData.name}!`
-                            : "Discover the latest articles and insights from our writers."}
+                            ? `Here's the latest from your community, ${userData.name}.`
+                            : "Read fresh insights and inspiration from our global writers."}
                     </p>
                 </div>
 
-                <div className="w-full flex justify-center mt-6">
-                    <input
-                        type="text"
-                        placeholder="Search blog by name..."
-                        className="w-1/2 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                {/* Search Box */}
+                <div className="w-full flex justify-center mt-10">
+                    <div className="relative w-1/2">
+                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
+                        <input
+                            type="text"
+                            placeholder="Search blog by title..."
+                            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
 
+                {/* Posts Grid */}
                 {filteredPosts.length > 0 ? (
-                    <div className="flex flex-wrap mt-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-12">
                         {filteredPosts.map((post) => (
-                            <div key={post.$id} className="p-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 post-card">
-                                <PostCard {...post} />
-                            </div>
+                            <PostCard key={post.$id} {...post} />
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8">
-                        <h1 className="text-2xl font-bold text-gray-500">No Posts Found</h1>
+                    <div className="text-center py-12">
+                        <h2 className="text-2xl text-gray-400 font-semibold">No Posts Found 😢</h2>
                     </div>
                 )}
 
-                <div className="w-full text-center mt-8">
-                    <a href="/all-posts" className="text-blue-600 text-lg font-semibold hover:underline">
+                {/* View All */}
+                <div className="w-full text-center mt-10">
+                    <a
+                        href="/all-posts"
+                        className="inline-block text-blue-600 text-lg font-semibold hover:underline transition duration-200"
+                    >
                         View All Posts →
                     </a>
                 </div>
