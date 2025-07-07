@@ -26,7 +26,6 @@ export default function PostForm({ post }) {
     const navigate = useNavigate();
     const auth = useSelector((state) => state.auth);
 
-    // 🧠 Loading / login logic
     if (!auth.status) {
         return (
             <p className="text-center text-red-600 mt-10 text-lg">
@@ -45,7 +44,6 @@ export default function PostForm({ post }) {
 
     const userData = auth.userData;
 
-    // 🔁 Slug transformation
     const slugTransform = useCallback((value) => {
         return value
             ?.trim()
@@ -54,7 +52,6 @@ export default function PostForm({ post }) {
             .replace(/\s+/g, "-") || "";
     }, []);
 
-    // 🔄 Auto-generate slug from title
     useEffect(() => {
         const subscription = watch((value, { name }) => {
             if (name === "title") {
@@ -67,33 +64,22 @@ export default function PostForm({ post }) {
         return () => subscription.unsubscribe();
     }, [watch, slugTransform, setValue]);
 
-    // 📨 Form submission
     const submit = async (data) => {
         try {
             let file = null;
 
+            // ✅ Upload image manually
             if (data.image?.[0]) {
                 file = await appwriteService.uploadFile(data.image[0]);
             }
 
-            if (post) {
-                // Update mode
-                if (file && post.featuredImage) {
-                    await appwriteService.deleteFile(post.featuredImage);
-                }
-
-                const updatedPost = await appwriteService.updatePost(post.$id, {
-                    ...data,
-                    featuredImage: file ? file.$id : post.featuredImage,
-                });
-
-                if (updatedPost) {
-                    navigate(`/post/${updatedPost.$id}`);
-                }
-            } else {
-                // Create mode
+            // ✅ Create new post
+            if (!post) {
                 const newPost = await appwriteService.createPost({
-                    ...data,
+                    title: data.title,
+                    slug: data.slug,
+                    content: data.content,
+                    status: data.status,
                     featuredImage: file?.$id || null,
                     userId: userData.$id,
                     userName: userData.name,
@@ -101,6 +87,22 @@ export default function PostForm({ post }) {
 
                 if (newPost) {
                     navigate(`/post/${newPost.$id}`);
+                }
+            } else {
+                // ✅ Update post
+                if (file && post.featuredImage) {
+                    await appwriteService.deleteFile(post.featuredImage);
+                }
+
+                const updatedPost = await appwriteService.updatePost(post.$id, {
+                    title: data.title,
+                    content: data.content,
+                    status: data.status,
+                    featuredImage: file ? file.$id : post.featuredImage,
+                });
+
+                if (updatedPost) {
+                    navigate(`/post/${updatedPost.$id}`);
                 }
             }
         } catch (error) {
