@@ -144,8 +144,8 @@ export default function PostForm({ post }) {
 
             {/* Right: Image, Status, Submit */}
             <div className="w-full lg:w-1/3 flex flex-col space-y-4">
-                <Input
-                    label="Featured Image"
+                <label className="block font-medium mb-1">Featured Image</label>
+                <input
                     type="file"
                     accept="image/png, image/jpg, image/jpeg, image/gif"
                     {...register("image", { required: !post })}
